@@ -20,6 +20,4 @@ obj/
 *.cache
 .DS_Store
 Thumbs.db
-
-Main.cs.uid
-GodotKeyboardListener.cs.uid
+*.cs.uid
