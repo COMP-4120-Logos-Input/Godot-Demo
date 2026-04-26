@@ -31,4 +31,9 @@ public sealed class GodotKeyboardListener : IKeyboardListener
     {
         KeyRepeated?.Invoke(this, new KeyEventArgs(null!, TimeSpan.Zero, key));
     }
+
+    public void Release(KeyCode key)
+    {
+        KeyReleased?.Invoke(this, new KeyEventArgs(null!, TimeSpan.Zero, key));
+    }
 }

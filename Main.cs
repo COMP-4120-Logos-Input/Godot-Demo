@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using Godot;
 using Logos.Input;
 
@@ -8,7 +6,7 @@ namespace TestProject;
 public partial class Main : Node2D
 {
 	private const int TileSize = 64;
-	private const double RepeatRate = 0.2;
+	private const double MoveInterval = 0.2;
 	private const double JumpWindow = 0.5;
 	
 	private static readonly char[][] Level =
@@ -21,8 +19,7 @@ public partial class Main : Node2D
 		"#       O  #".ToCharArray(),
 		"############".ToCharArray()
 	];
-
-	private readonly Dictionary<string, double> _holdTimers = new();
+	
 	private Vector2 _playerPos;
 	private int _width;
 	private int _height;
@@ -30,9 +27,17 @@ public partial class Main : Node2D
 	private GodotKeyboardListener _keyboardListener;
 	private KeyboardMapper _normalContext;
 	private KeyboardMapper _poweredContext;
+
+	private MoveControl _moveUp;
+	private MoveControl _moveDown;
+	private MoveControl _moveLeft;
+	private MoveControl _moveRight;
+	private JumpControl _jumpControl;
 	
 	private bool _isPowered;
 	private bool _isJumping;
+	
+	private double _moveTimer;
 	private double _jumpTimer;
 
 	private bool _hasWon;
@@ -67,24 +72,27 @@ public partial class Main : Node2D
 		_normalContext = new KeyboardMapper(_keyboardListener, true);
 		_poweredContext = new KeyboardMapper(_keyboardListener, false);
 		
-		BindMove(_normalContext, KeyCode.W, () => TryMove(0, -1, false));
-		BindMove(_normalContext, KeyCode.S, () => TryMove(0, 1, false));
-		BindMove(_normalContext, KeyCode.A, () => TryMove(-1, 0, false));
-		BindMove(_normalContext, KeyCode.D, () => TryMove(1, 0, false));
+		_moveUp = new MoveControl(new Vector2I(0, -1));
+		_moveDown = new MoveControl(new Vector2I(0, 1));
+		_moveLeft = new MoveControl(new Vector2I(-1, 0));
+		_moveRight = new MoveControl(new Vector2I(1, 0));
 		
-		BindMove(_poweredContext, KeyCode.W, () => TryMove(0, -1, _isJumping));
-		BindMove(_poweredContext, KeyCode.S, () => TryMove(0, 1, _isJumping));
-		BindMove(_poweredContext, KeyCode.A, () => TryMove(-1, 0, _isJumping));
-		BindMove(_poweredContext, KeyCode.D, () => TryMove(1, 0, _isJumping));
+		// bind wasd for both contexts
+		BindMove(_normalContext, KeyCode.W, _moveUp);
+		BindMove(_normalContext, KeyCode.S, _moveDown);
+		BindMove(_normalContext, KeyCode.A, _moveLeft);
+		BindMove(_normalContext, KeyCode.D, _moveRight);
 
-		_poweredContext.Bind(
-			new KeyGesture(KeyCode.Space, KeyAction.Press),
-			new MoveObserver(() =>
-			{
-				_isJumping = true;
-				_jumpTimer = JumpWindow;
-			})
-		);
+		BindMove(_poweredContext, KeyCode.W, _moveUp);
+		BindMove(_poweredContext, KeyCode.S, _moveDown);
+		BindMove(_poweredContext, KeyCode.A, _moveLeft);
+		BindMove(_poweredContext, KeyCode.D, _moveRight);
+
+		// bind space to jump, only in powered context
+		_jumpControl = new JumpControl();
+		_poweredContext.Bind(new KeyGesture(KeyCode.Space, KeyAction.Press), _jumpControl);
+		_poweredContext.Bind(new KeyGesture(KeyCode.Space, KeyAction.Repeat), _jumpControl);
+		_poweredContext.Bind(new KeyGesture(KeyCode.Space, KeyAction.Release), _jumpControl);
 	}
 
 	public override void _Draw()
@@ -134,6 +142,33 @@ public partial class Main : Node2D
 		DrawRect(playerRect, playerColor);
 	}
 
+	public override void _Input(InputEvent inputEvent)
+	{
+		if (inputEvent is not InputEventKey keyEvent) return;
+
+		var keyCode = keyEvent.Keycode switch
+		{
+			Key.W => KeyCode.W,
+			Key.A => KeyCode.A,
+			Key.S => KeyCode.S,
+			Key.D => KeyCode.D,
+			Key.Space => KeyCode.Space,
+			_ => (KeyCode?)null
+		};
+
+		if (keyCode is null) return;
+
+		if (keyEvent.Pressed)
+		{
+			if (keyEvent.Echo) _keyboardListener.Repeat(keyCode.Value);
+			else _keyboardListener.Press(keyCode.Value);
+		}
+		else
+		{
+			_keyboardListener.Release(keyCode.Value);
+		}
+	}
+
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
@@ -142,14 +177,25 @@ public partial class Main : Node2D
 			QueueRedraw();
 			return;
 		}
-		
-		HandleKey("move_up", KeyCode.W, delta);
-		HandleKey("move_down", KeyCode.S, delta);
-		HandleKey("move_left", KeyCode.A, delta);
-		HandleKey("move_right", KeyCode.D, delta);
 
-		if (_isPowered && !_isJumping && Input.IsActionPressed("jump")) _keyboardListener.Press(KeyCode.Space);
+		if (_jumpControl.State && !_isJumping)
+		{
+			_isJumping = true;
+			_jumpTimer = JumpWindow;
+		}
 		
+		_moveTimer -= delta;
+		var move = _moveUp.State + _moveDown.State + _moveLeft.State + _moveRight.State;
+
+		if (move != Vector2I.Zero && _moveTimer <= 0)
+		{
+			TryMove(move.X, move.Y, _isJumping);
+			_moveTimer = MoveInterval;
+		}
+
+		// reset timer if no movement (so you can spam keys to move wicked fast)
+		if (move == Vector2I.Zero) _moveTimer = 0;
+
 		if (_isJumping)
 		{
 			_jumpTimer -= delta;
@@ -158,31 +204,6 @@ public partial class Main : Node2D
 		
 		// Draw screen every frame
 		QueueRedraw();
-	}
-
-	private void HandleKey(string action, KeyCode key, double delta)
-	{
-		if (Input.IsActionJustPressed(action))
-		{
-			_keyboardListener.Press(key);
-			_holdTimers[action] = 0;
-			return;
-		}
-
-		if (Input.IsActionPressed(action))
-		{
-			_holdTimers.TryAdd(action, 0);
-			
-			_holdTimers[action] += delta;
-
-			if (!(_holdTimers[action] >= RepeatRate)) return;
-			_keyboardListener.Repeat(key);
-			_holdTimers[action] = 0;
-		}
-		else
-		{
-			_holdTimers.Remove(action);
-		}
 	}
 	
 	private void TryMove(int dx, int dy, bool canJump)
@@ -248,26 +269,59 @@ public partial class Main : Node2D
 		GD.Print("Powered up! Press space to jump.");
 	}
 	
-	private static void BindMove(KeyboardMapper mapper, KeyCode key, Action action)
+	private static void BindMove(KeyboardMapper mapper, KeyCode key, IKeyObserver observer)
 	{
-		mapper.Bind(new KeyGesture(key, KeyAction.Press), new MoveObserver(action));
-		mapper.Bind(new KeyGesture(key, KeyAction.Repeat), new MoveObserver(action));
+		mapper.Bind(new KeyGesture(key, KeyAction.Press), observer);
+		mapper.Bind(new KeyGesture(key, KeyAction.Repeat), observer);
+		mapper.Bind(new KeyGesture(key, KeyAction.Release), observer);
 	}
-	
-	private sealed class MoveObserver(Action action) : IKeyObserver
+
+	private sealed class MoveControl : KeyControl<Vector2I>
 	{
-		public void OnKeyPressed(object? sender, KeyEventArgs e)
+		public MoveControl(Vector2I direction)
 		{
-			action();
+			State = Vector2I.Zero;
+			_direction = direction;
+		}
+		
+		private readonly Vector2I _direction;
+
+		public override void OnKeyPressed(object? sender, KeyEventArgs e)
+		{
+			State = _direction;
+		}
+		
+		public override void OnKeyRepeated(object? sender, KeyEventArgs e)
+		{
+			State = _direction;
+		}
+		
+		public override void OnKeyReleased(object? sender, KeyEventArgs e)
+		{
+			State = Vector2I.Zero;
+		}
+	}
+
+	private sealed class JumpControl : KeyControl<bool>
+	{
+		public JumpControl()
+		{ 
+			State = false;
+		}
+		
+		public override void OnKeyPressed(object? sender, KeyEventArgs e)
+		{
+			State = true;
 		}
 
-		public void OnKeyRepeated(object? sender, KeyEventArgs e)
+		public override void OnKeyRepeated(object? sender, KeyEventArgs e)
 		{
-			action();
+			State = true;
 		}
 
-		public void OnKeyReleased(object? sender, KeyEventArgs e)
+		public override void OnKeyReleased(object? sender, KeyEventArgs e)
 		{
+			State = false;
 		}
 	}
 }
