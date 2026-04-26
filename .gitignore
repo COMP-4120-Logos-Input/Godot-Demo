@@ -21,3 +21,14 @@ obj/
 .DS_Store
 Thumbs.db
 *.cs.uid
+
+# Build
+*.dll
+createdump.exe
+Logos.Input.pdb
+Test Project.console.exe
+Test Project.deps.json
+Test Project.exe
+Test Project.pck
+Test Project.pdb
+Test Project.runtimeconfig.json
