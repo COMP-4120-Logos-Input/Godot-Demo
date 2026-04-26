@@ -1,0 +1,17 @@
+<Project Sdk="Godot.NET.Sdk/4.6.2">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework Condition=" '$(GodotTargetPlatform)' == 'android' ">net9.0</TargetFramework>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>TestProject</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Documents\Logos.Input\Logos.Input\Source\Logos.Input.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\Documents\Logos.Input\Logos.Input\Libraries\win-x64\SDL3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>SDL3.dll</Link>
+    </None>
+  </ItemGroup>
+</Project>

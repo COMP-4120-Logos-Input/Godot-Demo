@@ -1,0 +1,27 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test Project", "Test Project.csproj", "{D3FC3343-719A-40E0-9885-EFB4FDF2F94A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Logos.Input", "..\..\..\Documents\Logos.Input\Logos.Input\Source\Logos.Input.csproj", "{67408D29-FFFB-4F06-B6D4-196D1B3FD2D4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+	Debug|Any CPU = Debug|Any CPU
+	ExportDebug|Any CPU = ExportDebug|Any CPU
+	ExportRelease|Any CPU = ExportRelease|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D3FC3343-719A-40E0-9885-EFB4FDF2F94A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3FC3343-719A-40E0-9885-EFB4FDF2F94A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3FC3343-719A-40E0-9885-EFB4FDF2F94A}.ExportDebug|Any CPU.ActiveCfg = ExportDebug|Any CPU
+		{D3FC3343-719A-40E0-9885-EFB4FDF2F94A}.ExportDebug|Any CPU.Build.0 = ExportDebug|Any CPU
+		{D3FC3343-719A-40E0-9885-EFB4FDF2F94A}.ExportRelease|Any CPU.ActiveCfg = ExportRelease|Any CPU
+		{D3FC3343-719A-40E0-9885-EFB4FDF2F94A}.ExportRelease|Any CPU.Build.0 = ExportRelease|Any CPU
+		{67408D29-FFFB-4F06-B6D4-196D1B3FD2D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67408D29-FFFB-4F06-B6D4-196D1B3FD2D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67408D29-FFFB-4F06-B6D4-196D1B3FD2D4}.ExportDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67408D29-FFFB-4F06-B6D4-196D1B3FD2D4}.ExportDebug|Any CPU.Build.0 = Debug|Any CPU
+		{67408D29-FFFB-4F06-B6D4-196D1B3FD2D4}.ExportRelease|Any CPU.ActiveCfg = Debug|Any CPU
+		{67408D29-FFFB-4F06-B6D4-196D1B3FD2D4}.ExportRelease|Any CPU.Build.0 = Debug|Any CPU
+	EndGlobalSection
+EndGlobal
