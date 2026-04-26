@@ -1,8 +1,22 @@
-# Godot 4+ specific ignores
+# Godot
 .godot/
 .import/
+export.cfg
+export_presets.cfg
+
+# C#
 bin/
 obj/
 *.user
-*.cache
+*.csproj.user
+
+# IDE
 .idea/
+.vs/
+
+# Misc
+*.log
+*.tmp
+*.cache
+.DS_Store
+Thumbs.db
