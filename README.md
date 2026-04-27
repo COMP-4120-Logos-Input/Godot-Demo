@@ -1,3 +1,1 @@
-bla bla bla
-yap yap yap
-blabbering
+Placeholder README for now
