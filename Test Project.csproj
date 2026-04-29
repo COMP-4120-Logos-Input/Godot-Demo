@@ -8,4 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="Logos.Input\Source\Logos.Input.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Logos.Input\Source\**\*.cs" />
+  </ItemGroup>
 </Project>
