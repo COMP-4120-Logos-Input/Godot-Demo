@@ -6,12 +6,6 @@
     <RootNamespace>TestProject</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Documents\Logos.Input\Logos.Input\Source\Logos.Input.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\Documents\Logos.Input\Logos.Input\Libraries\win-x64\SDL3.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Link>SDL3.dll</Link>
-    </None>
+    <ProjectReference Include="Logos.Input\Source\Logos.Input.csproj" />
   </ItemGroup>
 </Project>
